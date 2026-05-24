@@ -42,7 +42,7 @@ let lastQRData = "";
 
 http.createServer(async (req, res) => {
   if (req.url === "/qr") {
-    if (lastQRData) {
+    if (!lastQRData) {
       res.writeHead(200, { "Content-Type": "text/html; charset=utf-8" });
       res.end(`<html><body style="font-family:sans-serif;text-align:center;padding:40px">
         <h2>⏳ QR aún no listo</h2><p>Espera unos segundos...</p>
