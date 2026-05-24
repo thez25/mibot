@@ -239,7 +239,7 @@ async function start() {
   sock.ev.on("creds.update", saveCreds);
 
   sock.ev.on("connection.update", ({ connection, lastDisconnect, qr }) => {
-    if (qr) { lastQRData = qr; qrTerminal.generate(qr, { small: true }); console.log("📷 QR listo → abre /qr en el navegador"); }
+    if (qr) { lastQRData = qr; console.log(qr); qrTerminal.generate(qr, { small: true }); console.log("📷 QR listo → abre /qr en el navegador"); }
     if (connection === "close") { if (lastDisconnect?.error?.output?.statusCode !== DisconnectReason.loggedOut) start(); }
     else if (connection === "open") { lastQRData = ""; console.log("✅ Bot conectado."); }
   });
