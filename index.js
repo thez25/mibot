@@ -5,6 +5,12 @@
 // ============================================================
 
 import fs          from "fs";
+import { execSync } from "child_process";
+
+// Si existe el flag de reset, borra el auth
+if (fs.existsSync("./reset_auth")) {
+  try { fs.rmSync("./auth", { recursive: true, force: true }); fs.unlinkSync("./reset_auth"); console.log("🗑️ Auth borrado por reset flag."); } catch {}
+}
 import http        from "http";
 import cron        from "node-cron";
 import pino        from "pino";
@@ -12,7 +18,7 @@ import QRCode      from "qrcode";
 import qrTerminal  from "qrcode-terminal";
 import {
   makeWASocket, useMultiFileAuthState,
-  DisconnectReason,
+  DisconnectReason, fetchLatestBaileysVersion,
   jidNormalizedUser, downloadContentFromMessage,
 } from "@whiskeysockets/baileys";
 
@@ -234,9 +240,22 @@ async function start() {
   console.log("🔄 Cargando sesión de auth...");
   const { state, saveCreds } = await useMultiFileAuthState("./auth");
 
+  console.log("🔄 Obteniendo versión de WhatsApp...");
+  let version = [2, 3000, 1015901307];
+  try {
+    const result = await Promise.race([
+      fetchLatestBaileysVersion(),
+      new Promise((_, rej) => setTimeout(() => rej(new Error("timeout")), 8000))
+    ]);
+    version = result.version;
+    console.log("✅ Versión obtenida: " + version.join("."));
+  } catch {
+    console.log("⚠️ No se pudo obtener versión, usando fallback.");
+  }
+
   console.log("🔄 Iniciando socket de WhatsApp...");
   const sock = makeWASocket({
-    version: [2, 3000, 1015901307],
+    version,
     auth: state,
     logger: pino({ level: "silent" }),
     printQRInTerminal: false,
